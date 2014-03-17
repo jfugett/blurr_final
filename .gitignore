@@ -1,4 +1,3 @@
-lib-cov
 *.seed
 *.log
 *.csv
@@ -6,10 +5,16 @@ lib-cov
 *.out
 *.pid
 *.gz
+*.swp
+*.swo
 
+thumbs.db
+npm-debug.log
+
+.idea
+.DS_Store
 pids
 logs
 results
-
-npm-debug.log
+lib-cov
 node_modules
