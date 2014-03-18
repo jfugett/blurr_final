@@ -347,7 +347,13 @@ git.commit = function commit(callback){
         function pushCommit(cb){
             git.pushFiles(git.gulp.baseCB(cb));
         }
-    ]);
+    ], function(err, result){
+        if(err){
+            git.gulp.errorHandler(new Error(err));
+        }
+        
+        callback(err, result);
+    });
 };
 
 // this method finishes a started feature and submits a pull request to merge the changes into development
@@ -432,7 +438,7 @@ git.finishFeature = function finishFeature(){
                 if(err){
                     console.log(err.res);
                     err = err.res;
-                    git.gulp.errorHandler(err);
+                    git.gulp.errorHandler(new Error(err));
                 }
                 
                 console.log('got to the end');
