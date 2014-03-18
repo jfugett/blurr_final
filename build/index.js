@@ -29,7 +29,7 @@ builder.extendGulp = function extendGulp(){
     gulp.execCB = require('./standardCallbacks').init(builder.gulp).exec;
     
     // setup a default callback so we don't have to type the same thing over and over
-    gulp.baseCB = require('./standardCallbacks').init(builder.gulp).standardc;
+    gulp.baseCB = require('./standardCallbacks').init(builder.gulp).standard;
 };
 
 // this method is the primary runner
