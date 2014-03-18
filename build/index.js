@@ -107,7 +107,7 @@ builder.dev = function dev(){
 // this is the test method that runs all of our tests
 builder.test = function test(){
     // just a shorthand reference
-    var gulp = builder.gulp
+    var gulp = builder.gulp;
 
     // let the user know that we're running the tests    
     gulp.notifyHandler('Running Tests', 'We\'re running the tests to make sure nothing broke please bear with us');
