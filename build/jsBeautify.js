@@ -4,7 +4,7 @@
 var paths = require('./paths');
 
 // require the beautifier library
-var beautify = require('gulp-beautify');
+var soften = require('gulp-soften');
 
 // include stream combiner for easier stream manipulation
 var combine = require('stream-combiner');
@@ -32,9 +32,7 @@ beauty.setupTasks = function setupTasks(){
 beauty.run = function(src, dest){
     var combined = combine(
         beauty.gulp.src(src),
-        beautify({
-            indentChar: '\t'
-        }),
+        soften(2),
         beauty.gulp.dest(dest)
     );
     

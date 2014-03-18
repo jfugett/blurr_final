@@ -33,7 +33,7 @@
     "gulp-jshint": "^1.5.0",
     "yargs": "^1.2.1",
     "gulp-esformatter": "^0.1.2",
-    "gulp-beautify": "^1.0.3"
+    "gulp-soften": "0.0.1"
   },
   "dependencies": {
     "lodash": "^2.4.1",
