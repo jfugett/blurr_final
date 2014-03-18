@@ -12,6 +12,9 @@ var reporter = require('./jsHintReporter');
 // include stream combiner so we can control stream dependencies and errors better
 var combine = require('stream-combiner');
 
+// include the browser opener
+var browser = require('gulp-open');
+
 // include our application paths
 var paths = require('./paths.js');
 
@@ -22,7 +25,7 @@ linter.init = function init(gulp, tasks){
     // assign references so we have access to them
     linter.gulp = gulp;
     linter.tasks = tasks;
-    
+
     // setup the tasks for this object
     linter.setupTasks();
 };
@@ -30,7 +33,7 @@ linter.init = function init(gulp, tasks){
 linter.setupTasks = function setupTasks(){
     // just a shortcut reference
     var tasks = linter.tasks;
-    
+
     // setup our publicly accessible tasks
     tasks.jsHint = linter.all;
 };
@@ -44,7 +47,7 @@ linter.run = function run(src){
         jshint.reporter(reporter),
         jshint.reporter('fail')
     );
-        
+
     // attaches the errorHandler to the streams
     combined.on('error', linter.gulp.errorHandler);
 };
@@ -95,6 +98,15 @@ linter.tests = function tests(){
 
 linter.workers = function workers(){
     linter.run(paths.jsWorkers);
+};
+
+linter.open = function open(){
+    var combined = combine(
+        linter.gulp.src('./test_results/jsHint.html'),
+        browser('<%file.path%>')
+    );
+
+    combined.on('error', linter.gulp.errorHandler);
 };
 
 // export our module
