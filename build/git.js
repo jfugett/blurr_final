@@ -408,6 +408,7 @@ git.finishFeature = function finishFeature(){
         },
         // here we issue the pull request to github
         function sendPullRequest(cb){
+            console.log('here');
             // set the source branch to the branch we're currently working on
             var src = currentBranch;
             
@@ -426,6 +427,7 @@ git.finishFeature = function finishFeature(){
                 message: message
             };
 
+            console.log('here too');
             git.pullRequest(options, function(err, results){
                 if(err){
                     console.log(err.res);
@@ -433,6 +435,7 @@ git.finishFeature = function finishFeature(){
                     git.gulp.errorHandler(err);
                 }
                 
+                console.log('got to the end');
                 console.log(results);    
                 cb(err, results);
             });
