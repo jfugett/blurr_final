@@ -17,7 +17,7 @@ cb.standard = function standard(callback){
     return function(err, result){
         // if there's an error use the error handler to handle output and return the error to the caller
         if(err){
-            cb.gulp.errorHandler(err);
+            cb.gulp.errorHandler(new Error(err));
             callback(err, null);
             return;
         }

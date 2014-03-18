@@ -1,19 +1,13 @@
 'use strict';
 
-// grab the gulp utility class so we can add color to our logging
-var gutil = require('gulp-util');
-
 // just a wrapper to allow the passing of needed dependencies
 // rethrow just tells us whether to rethrow the error or not
 var generator = function generator(reporterFunction, reThrow){
     var errorHandler = function errorHandler(error){
 
         // log the error message here
-        gutil.log(gutil.colors.red(error.message));
+        console.log(error.message);
         
-        // just in case somebody wasn't looking at the screen but can still hear we'll emit a beep
-        gutil.beep();
-
         // this sets up the notification content
         var options = {
             title: 'UH OH!',

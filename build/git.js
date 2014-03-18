@@ -169,7 +169,7 @@ git.startFeature = function startFeature(){
                 result = result.trim();
                 
                 if(result !== 'development'){
-                    git.gulp.errorHandler('You must be on the development branch to start a new feature');
+                    git.gulp.errorHandler(new Error('You must be on the development branch to start a new feature'));
                     cb('Not on development branch', null);
                     return;
                 }
@@ -183,7 +183,7 @@ git.startFeature = function startFeature(){
                 result = result.trim();
                 
                 if(result !== ''){
-                    git.gulp.errorHandler('You have modified files, please commit or stash them first');
+                    git.gulp.errorHandler(new Error('You have modified files, please commit or stash them first'));
                     cb('Modified Files', null);
                     return;
                 }

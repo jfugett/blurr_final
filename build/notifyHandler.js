@@ -1,14 +1,11 @@
 'use strict';
 
-// we load the gulp utility module to allow us to add color to the console output
-var gutil = require('gulp-util');
-
 // just a wrapper to allow the passing of needed dependencies
 var generator = function generator(reporterFunction){
     // this is just a convenience method to allow simple sending of notifications
     var notifyHandler = function notifyHandler(title, message){
         // output the message to the console
-        gutil.log(gutil.colors.green(title + ': ') + message);
+        console.log(title + ': ' + message);
 
         // set the title and messages to the notification object
         var options = {
