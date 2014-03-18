@@ -4,14 +4,18 @@
 // rethrow just tells us whether to rethrow the error or not
 var generator = function generator(reporterFunction, reThrow){
     var errorHandler = function errorHandler(error){
+        
+        if(error.message){
+            error = error.message;
+        }
 
         // log the error message here
-        console.log(error.message);
+        console.log(error);
         
         // this sets up the notification content
         var options = {
             title: 'UH OH!',
-            message: 'Error: ' + error.message
+            message: 'Error: ' + error
         };
         
         reporterFunction(options, function reporterFunctionCallback(){

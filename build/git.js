@@ -269,7 +269,7 @@ git.commit = function commit(callback){
         {
             type: 'input',
             name: 'closes',
-            message: 'What issues does this change close? (Seperate values with commas)\r\nExample: Closes: #67719970, Finishes: #67719983\r\n'
+            message: 'What issues does this change close? (Seperate values with commas)\r\nExample: [Closes: #67719970], [Finishes: #67719983]'
         }
     ];
     
@@ -382,7 +382,6 @@ git.finishFeature = function finishFeature(){
             git.getCurrentBranch(function callback(err, result){
                 result = result.trim();
 
-                console.log(result);
                 if(result.substr(0, 8) !== 'feature-'){
                     git.gulp.errorHandler(new Error('You\'re not currently working on a feature!'));
                     cb('You\'re not currently working on a feature!');
@@ -414,7 +413,6 @@ git.finishFeature = function finishFeature(){
         },
         // here we issue the pull request to github
         function sendPullRequest(cb){
-            console.log('here');
             // set the source branch to the branch we're currently working on
             var src = currentBranch;
             
@@ -433,7 +431,6 @@ git.finishFeature = function finishFeature(){
                 message: message
             };
 
-            console.log('here too');
             git.pullRequest(options, function(err, results){
                 if(err){
                     console.log(err.res);
@@ -441,8 +438,300 @@ git.finishFeature = function finishFeature(){
                     git.gulp.errorHandler(new Error(err));
                 }
                 
-                console.log('got to the end');
-                console.log(results);    
+                cb(err, results);
+            });
+        },
+        // now we checkout the development branch so that the user can move on to the next feature or hot fix
+        function checkoutDev(cb){
+            git.checkoutBranch('development', git.gulp.baseCB(cb));
+        }
+    ]);
+};
+
+// this method handles starting a new hot fix branch
+git.startHotFix = function startHotFix(){
+    var fixName = '';
+    
+    // questions to use for prompting the user
+    var questions = [
+        {
+            type: 'input',
+            name: 'hotfix_name',
+            message: 'What is the name of this hotfix?'
+        }
+    ];
+    
+    // this is the logic for creating a new hotfix branch
+    async.series([
+        // make sure the current branch is master
+        function checkCurrentBranch(cb){
+            git.getCurrentBranch(function callback(err, result){
+                result = result.trim();
+                
+                if(result !== 'master'){
+                    git.gulp.errorHandler(new Error('You must be on the master branch to start a new hot fix'));
+                    cb('Not on master branch', null);
+                    return;
+                }
+                
+                cb(err, result);
+            });
+        },
+        // make sure there aren't any modified files
+        function checkStatus(cb){
+            git.getBranchStatus(function callback(err, result){
+                result = result.trim();
+                
+                if(result !== ''){
+                    git.gulp.errorHandler(new Error('You have modified files, please commit or stash them first'));
+                    cb('Modified Files', null);
+                    return;
+                }
+                
+                cb(err, result);
+            });
+        },
+        // prompt the user for the hot fix name
+        function getFixName(cb){
+            //prompt the user with the previous questions
+            inquirer.prompt(questions, function(answers){
+                // get the hot fix name from the users response
+                fixName = answers.fix_name;
+                // make the hot fix name all lower case for consistency
+                fixName = fixName.toLowerCase();
+                // replace any spaces or other odd characters with a hyphen
+                fixName = fixName.replace(/[^a-z0-9\-]/g, '-');
+                // add the hotfix prefix to the name
+                fixName = 'hotfix-' + fixName;
+                
+                cb(null, true);
+            });
+        },
+        function createRemote(cb){
+            // create the remote branch and check it out
+            git.createRemoteBranch(fixName, git.gulp.baseCB(cb));
+        }
+    ]);
+};
+
+// this method handles starting a new relese branch
+git.startRelease = function startRelease(){
+    var releaseName = '';
+    
+    // questions to use for prompting the user
+    var questions = [
+        {
+            type: 'input',
+            name: 'release_name',
+            message: 'What is the name of this release?'
+        }
+    ];
+    
+    // this is the logic for creating a new release branch
+    async.series([
+        // make sure the current branch is development
+        function checkCurrentBranch(cb){
+            git.getCurrentBranch(function callback(err, result){
+                result = result.trim();
+                
+                if(result !== 'development'){
+                    git.gulp.errorHandler(new Error('You must be on the development branch to start a new release'));
+                    cb('Not on development branch', null);
+                    return;
+                }
+                
+                cb(err, result);
+            });
+        },
+        // make sure there aren't any modified files
+        function checkStatus(cb){
+            git.getBranchStatus(function callback(err, result){
+                result = result.trim();
+                
+                if(result !== ''){
+                    git.gulp.errorHandler(new Error('You have modified files, please commit or stash them first'));
+                    cb('Modified Files', null);
+                    return;
+                }
+                
+                cb(err, result);
+            });
+        },
+        // prompt the user for the release name
+        function getReleaseName(cb){
+            //prompt the user with the previous questions
+            inquirer.prompt(questions, function(answers){
+                // get the release name from the users response
+                releaseName = answers.fix_name;
+                // make the release name all lower case for consistency
+                releaseName = releaseName.toLowerCase();
+                // replace any spaces or other odd characters with a hyphen
+                releaseName = releaseName.replace(/[^a-z0-9\-]/g, '-');
+                // add the release prefix to the name
+                releaseName = 'release-' + releaseName;
+                
+                cb(null, true);
+            });
+        },
+        function createRemote(cb){
+            // create the remote branch and check it out
+            git.createRemoteBranch(releaseName, git.gulp.baseCB(cb));
+        }
+    ]);
+};
+
+// this method finishes a started hotfix and submits a pull request to merge the changes into master
+git.finishHotFix = function finishHotFix(){
+    // we'll need access to buildType and the current branch between subtasks
+    var buildType = 'patch';
+    var currentBranch = '';
+    
+    async.series([
+        //make sure the current branch is a hotfix branch
+        function isHotFixBranch(cb){
+            git.getCurrentBranch(function callback(err, result){
+                result = result.trim();
+
+                console.log(result);
+                if(result.substr(0, 7) !== 'hotfix-'){
+                    git.gulp.errorHandler(new Error('You\'re not currently working on a hot fix!'));
+                    cb('You\'re not currently working on a hotfix!');
+                    return;
+                }
+                
+                currentBranch = result;
+                
+                cb(err, result);
+            });
+        },
+        // here we bump the version based on the previous answer
+        function bumpVersion(cb){
+            git.tasks._bump(buildType);
+            
+            cb(null, true);
+        },
+        // here we push the build to the server
+        function commitBuild(cb){
+            git.commit(git.gulp.baseCB(cb));
+        },
+        // here we issue the pull request to github
+        function sendPullRequest(cb){
+            // set the source branch to the branch we're currently working on
+            var src = currentBranch;
+            
+            // set the destination branch to master
+            var dest = 'master';
+            
+            // normalize the feature name for humans
+            var fixName = src.substr(7, src.length - 7);
+            fixName = fixName.replace('-', ' ');
+            
+            var message = 'Finished Hot Fix ' + fixName;
+
+            var options = {
+                src: src,
+                dest: dest,
+                message: message
+            };
+
+            git.pullRequest(options, function(err, results){
+                if(err){
+                    console.log(err.res);
+                    err = err.res;
+                    git.gulp.errorHandler(new Error(err));
+                }
+                
+                cb(err, results);
+            });
+        },
+        // now we checkout the development branch so that the user can move on to the next feature or hot fix
+        function checkoutDev(cb){
+            git.checkoutBranch('development', git.gulp.baseCB(cb));
+        }
+    ]);
+};
+
+// this method finishes a started release and submits a pull request to merge the changes into master
+git.finishRelease = function finishRelease(){
+    // these are the questions we'll prompt the user for
+    var questions = [
+        {
+            type: 'list',
+            name: 'type',
+            message: 'What type of release is this?',
+            choices: [
+                'major',
+                'minor'
+            ]
+        }
+    ];
+    
+    // we'll need access to buildType and the current branch between subtasks
+    var buildType = '';
+    var currentBranch = '';
+    
+    async.series([
+        //make sure the current branch is a release branch
+        function isReleaseBranch(cb){
+            git.getCurrentBranch(function callback(err, result){
+                result = result.trim();
+
+                if(result.substr(0, 8) !== 'release-'){
+                    git.gulp.errorHandler(new Error('You\'re not currently working on a release!'));
+                    cb('You\'re not currently working on a release!');
+                    return;
+                }
+                
+                currentBranch = result;
+                
+                cb(err, result);
+            });
+        },
+        // here we find out if the release is a major or minor release
+        function promptUser(cb){
+            inquirer.prompt(questions, function(answers){
+                buildType = answers.type;
+                
+                cb(null, true);
+            });
+        },
+        // here we bump the version based on the previous answer
+        function bumpVersion(cb){
+            git.tasks._bump(buildType);
+            
+            cb(null, true);
+        },
+        // here we push the build to the server
+        function commitBuild(cb){
+            git.commit(git.gulp.baseCB(cb));
+        },
+        // here we issue the pull request to github
+        function sendPullRequest(cb){
+            // set the source branch to the branch we're currently working on
+            var src = currentBranch;
+            
+            // set the destination branch to master
+            var dest = 'master';
+            
+            // normalize the release name for humans
+            var releaseName = src.substr(8, src.length - 8);
+            releaseName = releaseName.replace('-', ' ');
+            
+            var message = 'Finished Release ' + releaseName;
+
+            var options = {
+                src: src,
+                dest: dest,
+                message: message
+            };
+
+            git.pullRequest(options, function(err, results){
+                if(err){
+                    console.log(err.res);
+                    err = err.res;
+                    git.gulp.errorHandler(new Error(err));
+                }
+                
                 cb(err, results);
             });
         },
