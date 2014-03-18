@@ -20,7 +20,7 @@ bumper.init = function init(gulp, tasks){
     
     // setup the tasks for this object
     bumper.setupTasks();
-}
+};
 
 // this method assigns the tasks to the public tasks
 bumper.setupTasks = function setupTasks(){

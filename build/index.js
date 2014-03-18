@@ -85,6 +85,9 @@ builder.includeTasks = function includeTasks(){
     
     // include our version bumping tasks
     require('./bump').init(gulp, tasks);
+    
+    // include our jshint tasks
+    require('./jsHint').init(gulp, tasks);
 };
 
 // this is the development method that defines our default development workflow
@@ -104,12 +107,12 @@ builder.dev = function dev(){
 // this is the test method that runs all of our tests
 builder.test = function test(){
     // just a shorthand reference
-    var gulp = builder.gulp;
+    var gulp = builder.gulp
 
     // let the user know that we're running the tests    
     gulp.notifyHandler('Running Tests', 'We\'re running the tests to make sure nothing broke please bear with us');
 
-    console.log('Test Tasks Will Be Called Here');
+    gulp.start('jsHint');
 
     // let the user know that the tests have completed successfully
     gulp.notifyHandler('Tests Finished Running', 'The tests have completed successfully');
