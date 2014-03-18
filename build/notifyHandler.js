@@ -12,13 +12,13 @@ var generator = function generator(reporterFunction){
             title: title,
             message: message
         };
-        
+
         // call the growler application we registered to show the notification
         reporterFunction(options, function reporterFunctionCallback(){
             return true;
         });
     };
-    
+
     // return our method so we can reuse it in our gulp modules
     return notifyHandler;
 };

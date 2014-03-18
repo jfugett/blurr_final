@@ -1,6 +1,6 @@
 {
   "name": "Blurr",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Build applications so fast everybody else will see a blurr",
   "main": "app/index.js",
   "scripts": {
@@ -33,7 +33,8 @@
     "gulp-jshint": "^1.5.0",
     "yargs": "^1.2.1",
     "gulp-esformatter": "^0.1.2",
-    "gulp-soften": "0.0.1"
+    "gulp-soften": "0.0.1",
+    "gulp-jscs": "^0.3.2"
   },
   "dependencies": {
     "lodash": "^2.4.1",

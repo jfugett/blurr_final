@@ -7,7 +7,7 @@ var cb = {};
 cb.init = function init(gulp){
     // keep a reference to gulp
     cb.gulp = gulp;
-    
+
     // return this object so the methods can be used
     return cb;
 };
@@ -35,7 +35,7 @@ cb.exec = function exec(callback){
             callback(err, stderr);
             return;
         }
-        
+
         // if it was successful return the stdout to the application
         callback(err, stdout);
     };
