@@ -125,6 +125,8 @@ builder.build = function build(){
     
     // let the user know that the build process has started
     gulp.notifyHandler('Building Application Files', 'We\'re building the application files please bear with us');
+    
+    gulp.start('test');
 
     // let the user know that the build is finished
     gulp.notifyHandler('Build Complete', 'The application is now built');
