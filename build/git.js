@@ -1,8 +1,5 @@
 'use strict';
 
-// include the gutil module
-var gutil = require('gulp-util');
-
 // include the exec module so that we can call shell commands
 var exec = require('child_process').exec;
 
@@ -40,7 +37,13 @@ git.setupTasks = function setupTasks(){
     
     tasks.gitInfo = git.gitInfo;
     
+    tasks.update = git.update;
+    
+    tasks.commit = git.commit;
+    
     tasks.startFeature = git.startFeature;
+    
+    tasks.finishFeature = git.finishFeature;
 };
 
 // this gets the current branch and then calls the callback function with it
@@ -75,13 +78,13 @@ git.checkoutBranch = function checkoutBranch(branchName, cb){
 
 // this method adds files to the git staging area that aren't in the .gitignore (also handles removals)
 git.addFiles = function addFiles(cb){
-    var cmd = 'git add -all';
+    var cmd = 'git add --all';
     exec(cmd, git.gulp.execCB(cb));
 };
 
 // this method handles the commiting of files to the current branch
 git.commitFiles = function commitFiles(message, cb){
-    var cmd = 'git commit -m ' + message;
+    var cmd = 'git commit -m "' + message + '"';
     exec(cmd, git.gulp.execCB(cb));
 };
 
@@ -134,14 +137,14 @@ git.gitInfo = function gitInfo(){
         // show the current branch
         function showCurrentBranch(cb){
             git.getCurrentBranch(function callback(err, result){
-                gutil.log(gutil.colors.green('Current Branch: ') + result);
+                console.log('Current Branch: ' + result);
                 cb(err, result);
             });
         },
         // show the current status in short form
         function showStatus(cb){
             git.getBranchStatus(function callback(err, result){
-                gutil.log(gutil.colors.green('Status: ') + result);
+                console.log('Status: ' + result);
                 cb(err, result);
             });
         }
@@ -214,546 +217,240 @@ git.startFeature = function startFeature(){
     ]);
 };
 
-module.exports = git;
+// this method calls the pull branch private method to update the current branch
+git.update = function update(){
+    git.pullBranch(git.gulp.baseCB(function(err, result){
+        console.log(result);
+    }));
+};
 
-// // this runs the standard gulp build which includes tests to prevent a user from breaking the build
-// var runBuild = function runBuild(cb){
-//     var cmd = 'gulp build';
-//     exec(cmd, standardExecCallback(cb));
-// };
-
-// // this runs the standard gulp bumpVersion which bumps the version of all necessary files
-// var bumpVersion = function bumpVersion(type, cb){
-//     var cmd = 'gulp bumpVersion --type ' + type;
-//     exec(cmd, standardExecCallback(cb));
-// };
-
-// // this method handles starting a new hot fix branch
-// var startHotFix = function startHotFix(){
-//     // this will hold the name of the new hot fix
-//     var fixName = '';
+// this method adds all modified files not in .gitignroe and creates a commit with a properly formated message
+git.commit = function commit(callback){
+    // this will hold our commit message
+    var message = '';
     
-//     // this holds the options for inquirer to prompt the user
-//     var questions = [
-//         {
-//             type: 'input',
-//             name: 'fix_name',
-//             message: 'What is the name of this hotfix?'
-//         }
-//     ];
+    // questions we'll prompt the user with
+    var questions = [
+        {
+            type: 'list',
+            name: 'type',
+            message: 'What type of commit is this?',
+            choices: [
+                'feat',
+                'fix',
+                'docs',
+                'style',
+                'refactor',
+                'perf',
+                'test',
+                'chore'
+            ]
+        },
+        {
+            type: 'input',
+            name: 'scope',
+            message: 'What area was this change in?'
+        },
+        {
+            type: 'input',
+            name: 'subject',
+            message: 'Brief description of this commit'
+        },
+        {
+            type: 'input',
+            name: 'body',
+            message: 'Please detail your change(s) (You can force a newline by adding \\n)'
+        },
+        {
+            type: 'input',
+            name: 'breaks',
+            message: 'What does this change break? (Separate values with commas)'
+        },
+        {
+            type: 'input',
+            name: 'closes',
+            message: 'What issues does this change close? (Seperate values with commas)\r\nExample: Closes: #67719970, Finishes: #67719983\r\n'
+        }
+    ];
     
-//     // this handles the logic of creation the new hot fix branch
-//     async.series([
-//         function(cb){
-//             // makes sure the current branch is master
-//             getCurrentBranch(function(err, result){
-//                 result = result.trim();
-//                 if(result !== 'master'){
-//                     gutil.log('You are not on the master branch!');
-//                     gutil.log('Please commit or stash any changes you have');
-//                     gutil.log('then checkout the master branch');
-                    
-//                     gulp.errorHandler('Not on master branch');
-//                     return;
-//                 }
+    // we use async here to ensure everything runs in the right order
+    async.series([
+        // pull the current branch so that it's up to date
+        function updateCurrentBranch(cb){
+            git.pullBranch(git.gulp.baseCB(cb));
+        },
+        // make sure the current branch isn't development or master as these shouldn't be committed to directly
+        function checkBranch(cb){
+            git.getCurrentBranch(function(err, result){
+                result = result.trim();
                 
-//                 cb(err, result);
-//             });
-//         },
-//         function(cb){
-//             // makes sure you don't have any modified files
-//             getBranchStatus(function(err, result){
-//                 if(result !== ''){
-//                     gutil.log('You have modified files in your git branch.');
-//                     gutil.log('Please either stash your changes, revert them, or commit them first');
-                    
-//                     gulp.errorHandler('Modified Files');
-//                     return;
-//                 }
+                if(result === 'development' || result === 'master'){
+                    git.gulp.errorHandler(new Error('You can\'t commit directly to development or master'));
+                }
                 
-//                 cb(err, result);
-//             });
-//         },
-//         function(cb){
-//             // prompt the user for the feature name
-//             inquirer.prompt(questions, function(answers){
-//                 // changes non-alphanumerics to hyphens just to be safe
-//                 fixName = answers.fix_name.replace(/[^a-z0-9\-]/gi, '-');
-//                 fixName = 'hotfix-' + fixName;
-                
-//                 cb(null, true);
-//             });
-//         },
-//         function(cb){
-//             // creates the remote branch and checks it out
-//             createRemoteBranch(fixName, standardCallback(cb));
-//         }
-//     ]);
-// };
-
-// // this method handles starting a new release branch
-// var startRelease = function startRelease(){
-//     // this will hold the name of the new feature
-//     var releaseName = '';
-    
-//     // this holds the options for inquirer to prompt the user
-//     var questions = [
-//         {
-//             type: 'input',
-//             name: 'release_name',
-//             message: 'What is the name of this release?'
-//         }
-//     ];
-    
-//     // this handles the logic of creation the new feature branch
-//     async.series([
-//         function(cb){
-//             // makes sure the current branch is development
-//             getCurrentBranch(function(err, result){
-//                 result = result.trim();
-//                 if(result !== 'development'){
-//                     gutil.log('You are not on the development branch!');
-//                     gutil.log('Please commit or stash any changes you have');
-//                     gutil.log('then checkout development branch');
-                    
-//                     gulp.errorHandler('Not on development branch');
-//                     return;
-//                 }
-                
-//                 cb(err, result);
-//             });
-//         },
-//         function(cb){
-//             // makes sure you don't have any modified files
-//             getBranchStatus(function(err, result){
-//                 if(result !== ''){
-//                     gutil.log('You have modified files in your git branch.');
-//                     gutil.log('Please either stash your changes, revert them, or commit them first');
-                    
-//                     gulp.errorHandler('Modified Files');
-//                     return;
-//                 }
-                
-//                 cb(err, result);
-//             });
-//         },
-//         function(cb){
-//             // prompt the user for the feature name
-//             inquirer.prompt(questions, function(answers){
-//                 // changes non-alphanumerics to hyphens just to be safe
-//                 releaseName = answers.release_name.replace(/[^a-z0-9\-]/gi, '-');
-//                 releaseName = 'release-' + releaseName;
-                
-//                 cb(null, true);
-//             });
-//         },
-//         function(cb){
-//             // creates the remote branch and checks it out
-//             createRemoteBranch(releaseName, standardCallback(cb));
-//         }
-//     ]);
-// };
-
-// // this method calls the method to update the branch
-// var update = function update(){
-//     // pull any changes on the current branch and output the results
-//     pullBranch(standardCallback(function(){}));
-// };
-
-// // this method adds all modified files not in .gitignore and creates a commit with the proper format
-// var commit = function commit(callback){
-//     // this will hold our commit message
-//     var message = '';
-    
-//     // these are the questions we will prompt the user for
-//     var questions = [
-//         {
-//             type: 'list',
-//             name: 'type',
-//             message: 'What type of commit is this?',
-//             choices: [
-//                 'feat',
-//                 'fix',
-//                 'docs',
-//                 'style',
-//                 'refactor',
-//                 'perf',
-//                 'test',
-//                 'chore'
-//             ]
-//         },
-//         {
-//             type: 'input',
-//             name: 'scope',
-//             message: 'What area was this change in?',
-//         },
-//         {
-//             type: 'input',
-//             name: 'subject',
-//             message: 'What is a brief description of this commit?'
-//         },
-//         {
-//             type: 'input',
-//             name: 'body',
-//             message: 'Please detail your change(s) (You can force a newline by adding \\n)'
-//         },
-//         {
-//             type: 'input',
-//             name: 'breaks',
-//             message: 'What does this change break? (Separate values with commas)'
-//         },
-//         {
-//             type: 'input',
-//             name: 'closes',
-//             message: 'What issues does this change close? (Separate values with commas)'
-//         }
-//     ];
-    
-//     // we use async here to ensure everything runs in the appropriate order
-//     async.series([
-//         // pull the current branch
-//         function(cb){
-//             pullBranch(standardCallback(cb));
-//         },
-//         // makes sure the current branch isn't development or master
-//         function(cb){
-//             getCurrentBranch(function(err, result){
-//                 result = result.trim();
-//                 if(result === 'development' || result === 'master'){
-//                     gutil.log('You can\'t commit directly to development or master');
-//                     gutil.log('Please create a feature or hotfix branch instead');
-//                     gutil.log('This will then be merged into the appropriate place with a pull request');
-                    
-//                     gulp.errorHandler('Can\'t commit directly to development or master', null);
-//                     return;
-//                 }
-                
-//                 cb(err, result);
-//             });
-//         },
-//         // run the tests and make the build to ensure the commit has the appropriate files and doesn't break the build
-//         function(cb){
-//             runBuild(standardCallback(cb));
-//         },
-//         // add any modified, new, or deleted files to the git staging area
-//         function(cb){
-//             addFiles(standardCallback(cb));
-//         },
-//         // get the responses from the user that are needed to build up the formatted commit message
-//         // this message format is based off of industry standards and allows parsing for the changelog
-//         function(cb){
-//             inquirer.prompt(questions, function(answers){
-//                 message = answers.type;
-//                 message += '(' + answers.scope + '): ';
-//                 message += answers.subject;
-//                 message += '\n\n';
-                
-//                 var body = answers.body.replace(/\\n /g, '\r\n');
-//                 body = body.replace(/\\n/g, '\r\n');
-                
-//                 message += body;
-//                 message += '\r\r\n\n';
-                
-//                 var breaks = answers.breaks.replace(/, /g, ',');
-//                 breaks = breaks.replace(/,/g, '\r\n');
-//                 breaks = breaks.trim();
-                
-//                 var closes = answers.closes.replace(/, /g, ',');
-//                 closes = closes.replace(/,/g, '\r\n');
-//                 closes = closes.trim();
-
-//                 if(breaks !== ''){
-//                     message += breaks;
-//                     message += '\r\n\r\n';
-//                 }
-//                 if(closes !== ''){
-//                     message += closes;
-//                 }
-                
-//                 cb(null, true);
-//             });
-//         },
-//         // commit the actual files
-//         function(cb){
-//             commitFiles(message, standardCallback(cb));
-//         },
-//         // push the files to the remote server
-//         function(cb){
-//             pushFiles(standardCallback(cb));
-//         }
-//     ], function(err, results){
-//         if(typeof callback === 'function'){
-//             if(err){
-//                 gulp.errorHandler(err);
-//                 callback(err, null);
-//                 return;
-//             }
+                cb(err, result);
+            });
+        },
+        // run the tests and make the build to ensure the commit has the appropriate files and doesn't break the build
+        function performBuild(cb){
+            git.gulp.start('build');
             
-//             callback(err, results);
-//         }
-//     });
-// };
-
-// var finishFeature = function finishFeature(){
-//     // these are the questions we will prompt the user for
-//     var questions = [
-//         {
-//             type: 'list',
-//             name: 'type',
-//             message: 'What type of feature is this?',
-//             choices: [
-//                 'major',
-//                 'minor',
-//                 'patch',
-//                 'dev'
-//             ]
-//         }
-//     ];
-    
-//     var buildType = '';
-//     var currentBranch = '';
-
-//     async.series([
-//         // makes sure the current branch is a feature branch
-//         function(cb){
-//             getCurrentBranch(function(err, result){
-//                 result = result.trim();
-//                 if(result.substring(0, 8) !== 'feature-'){
-//                     gutil.log('You\'re not currently working on a feature branch!');
-//                     gutil.log('Either checkout the branch you wanted to work on or start a new feature');
-                    
-//                     gulp.errorHandler('You\'re not currently working on a feature!', null);
-//                     return;
-//                 }
+            cb(null, true);
+        },
+        // add any modified, new, or deleted files to the git staging area
+        function addModifiedFiles(cb){
+            console.log('add');
+            git.addFiles(git.gulp.baseCB(cb));
+        },
+        // get the responses from the user that are needed to build up the formatted commit message
+        // this message format is based off of industry standards and allows parsing for the changelog
+        function promptUser(cb){
+            console.log('prompt');
+            inquirer.prompt(questions, function(answers){
+                message = answers.type;
+                message += '(' + answers.scope + '): ';
+                message += answers.subject;
+                message += '\r\n\r\n';
                 
-//                 currentBranch = result;
+                var body = answers.body.replace(/\\n /g, '\r\n');
+                body = body.replace(/\\n/g, '\r\n');
                 
-//                 cb(err, result);
-//             });
-//         },
-//         // here we ask whether the build is a major, minor, or patch type feature
-//         function(cb){
-//             inquirer.prompt(questions, function(answers){
-//                 buildType = answers.type;
+                message += body;
+                message += '\r\n\r\n';
                 
-//                 cb(null, true);
-//             });
-//         },
-//         // here we bump the version based on the answer before
-//         function(cb){
-//             bumpVersion(buildType, standardCallback(cb));
-//         },
-//         // here we push the build to the server
-//         function(cb){
-//             commit(cb);
-//         },
-//         // here we issue the pull request to github
-//         function(cb){
-//             var src = currentBranch;
-//             var dest = 'development';
-//             var featureName = src.substr(8, src.length - 8);
-//             featureName = featureName.replace('-', ' ');
-
-//             var message = 'Finished Feature ' + featureName;
-
-//             var options = {
-//                 src: src,
-//                 dest: dest,
-//                 message: message
-//             };
-
-//             pullRequest(options, function(err, results){
-//                 if(err){
-//                     err = err.res.body;
-//                     gulp.errorHandler(err);
-//                 }
+                var breaks = answers.breaks.replace(/, /g, ',');
+                breaks = breaks.replace(/,/g, '\r\n');
+                breaks = breaks.trim();
                 
-//                 gutil.log(results);    
-//                 cb(err, results);
-//             });
-//         },
-//         // now we checkout the development branch so that the user can move on to the next feature or hot fix
-//         function(cb){
-//             checkoutBranch('development', standardCallback(cb));
-//         }
-//     ]);
-// };
+                var closes = answers.closes.replace(/, /g, ',');
+                closes = closes.replace(/,/g, '\r\n');
+                closes = closes.trim();
 
-// var finishHotFix = function finishFeature(){
-//     // these are the questions we will prompt the user for
-//     var buildType = 'patch';
-//     var currentBranch = '';
-    
-//     async.series([
-//         // makes sure the current branch is a feature branch
-//         function(cb){
-//             getCurrentBranch(function(err, result){
-//                 result = result.trim();
-//                 if(result.substring(0, 7) !== 'hotfix-'){
-//                     gutil.log('You\'re not currently working on a hotfix branch!');
-//                     gutil.log('Either checkout the branch you wanted to work on or start a new hotfix');
-                    
-//                     gulp.errorHandler('You\'re not currently working on a hotfix!', null);
-//                     return;
-//                 }
+                if(breaks !== ''){
+                    message += breaks;
+                    message += '\r\n\r\n';
+                }
+                if(closes !== ''){
+                    message += closes;
+                }
                 
-//                 currentBranch = result;
+                message = message.replace('"', '\\"');
                 
-//                 cb(err, result);
-//             });
-//         },
-//         // here we bump the version since it's a hotfix we know it's a patch
-//         function(cb){
-//             bumpVersion(buildType, standardCallback(cb));
-//         },
-//         // here we push the build to the server
-//         function(cb){
-//             commit(cb);
-//         },
-//         // here we issue the pull request to github
-//         function(cb){
-//             var src = currentBranch;
-//             var dest = 'master';
-//             var featureName = src.substr(7, src.length - 7);
-//             featureName = featureName.replace('-', ' ');
+                cb(null, true);
+            });
+        },
+        // commit the files
+        function commitAddedFiles(cb){
+            git.commitFiles(message, git.gulp.baseCB(cb));
+        },
+        // push the files to the remote
+        function pushCommit(cb){
+            git.pushFiles(git.gulp.baseCB(cb));
+        }
+    ], function(err, result){
+        if(err){
+            git.gulp.errorHandler(new Error(err));
+        }
+        
+        callback(err, result);
+    });
+};
 
-//             var message = 'Finished Feature ' + featureName;
+// this method finishes a started feature and submits a pull request to merge the changes into development
+git.finishFeature = function finishFeature(){
+    // these are the questions we'll prompt the user for
+    var questions = [
+        {
+            type: 'list',
+            name: 'type',
+            message: 'What type of feature is this?',
+            choices: [
+                'major',
+                'minor',
+                'patch'
+            ]
+        }
+    ];
+    
+    // we'll need access to buildType and the current branch between subtasks
+    var buildType = '';
+    var currentBranch = '';
+    
+    async.series([
+        //make sure the current branch is a feature branch
+        function isFeatureBranch(cb){
+            git.getCurrentBranch(function callback(err, result){
+                result = result.trim();
 
-//             var options = {
-//                 src: src,
-//                 dest: dest,
-//                 message: message
-//             };
-
-//             pullRequest(options, function(err, results){
-//                 if(err){
-//                     err = err.res.body;
-//                     gulp.errorHandler(err);
-//                 }
+                console.log(result);
+                if(result.substr(0, 8) !== 'feature-'){
+                    git.gulp.errorHandler(new Error('You\'re not currently working on a feature!'));
+                    cb('You\'re not currently working on a feature!');
+                    return;
+                }
                 
-//                 gutil.log(results);    
-//                 cb(err, results);
-//             });
-//         },
-//         // now we checkout the development branch so that the user can move on to the next feature or hot fix
-//         function(cb){
-//             checkoutBranch('development', standardCallback(cb));
-//         }
-//     ]);
-// };
-
-// var finishRelease = function finishRelease(){
-//     // these are the questions we will prompt the user for
-//     var questions = [
-//         {
-//             type: 'list',
-//             name: 'type',
-//             message: 'What type of release is this?',
-//             choices: [
-//                 'major',
-//                 'minor'
-//             ]
-//         }
-//     ];
-    
-//     var buildType = '';
-//     var currentBranch = '';
-
-//     async.series([
-//         // makes sure the current branch is a feature branch
-//         function(cb){
-//             getCurrentBranch(function(err, result){
-//                 result = result.trim();
-//                 if(result.substring(0, 8) !== 'release-'){
-//                     gutil.log('You\'re not currently working on a release branch!');
-//                     gutil.log('Either checkout the branch you wanted to work on or start a new release');
-                    
-//                     gulp.errorHandler('You\'re not currently working on a release!', null);
-//                     return;
-//                 }
+                currentBranch = result;
                 
-//                 currentBranch = result;
+                cb(err, result);
+            });
+        },
+        // here we find out if the feature is a major, minor, or patch type
+        function promptUser(cb){
+            inquirer.prompt(questions, function(answers){
+                buildType = answers.type;
                 
-//                 cb(err, result);
-//             });
-//         },
-//         // here we ask whether the build is a major, minor, or patch type feature
-//         function(cb){
-//             inquirer.prompt(questions, function(answers){
-//                 buildType = answers.type;
+                cb(null, true);
+            });
+        },
+        // here we bump the version based on the previous answer
+        function bumpVersion(cb){
+            git.tasks._bump(buildType);
+            
+            cb(null, true);
+        },
+        // here we push the build to the server
+        function commitBuild(cb){
+            git.commit(git.gulp.baseCB(cb));
+        },
+        // here we issue the pull request to github
+        function sendPullRequest(cb){
+            console.log('here');
+            // set the source branch to the branch we're currently working on
+            var src = currentBranch;
+            
+            // set the destination branch to development
+            var dest = 'development';
+            
+            // normalize the feature name for humans
+            var featureName = src.substr(8, src.length - 8);
+            featureName = featureName.replace('-', ' ');
+            
+            var message = 'Finished Feature ' + featureName;
+
+            var options = {
+                src: src,
+                dest: dest,
+                message: message
+            };
+
+            console.log('here too');
+            git.pullRequest(options, function(err, results){
+                if(err){
+                    console.log(err.res);
+                    err = err.res;
+                    git.gulp.errorHandler(new Error(err));
+                }
                 
-//                 cb(null, true);
-//             });
-//         },
-//         // here we bump the version based on the answer before
-//         function(cb){
-//             bumpVersion(buildType, standardCallback(cb));
-//         },
-//         // here we push the build to the server
-//         function(cb){
-//             commit(cb);
-//         },
-//         // here we issue the pull request to github
-//         function(cb){
-//             var src = currentBranch;
-//             var dest = 'master';
-//             var releaseName = src.substr(8, src.length - 8);
-//             releaseName = releaseName.replace('-', ' ');
+                console.log('got to the end');
+                console.log(results);    
+                cb(err, results);
+            });
+        },
+        // now we checkout the development branch so that the user can move on to the next feature or hot fix
+        function checkoutDev(cb){
+            git.checkoutBranch('development', git.gulp.baseCB(cb));
+        }
+    ]);
+};
 
-//             var message = 'Finished Release ' + releaseName;
-
-//             var options = {
-//                 src: src,
-//                 dest: dest,
-//                 message: message
-//             };
-
-//             pullRequest(options, function(err, results){
-//                 if(err){
-//                     err = err.res.body;
-//                     gulp.errorHandler(err);
-//                 }
-                
-//                 gutil.log(results);    
-//                 cb(err, results);
-//             });
-//         },
-//         // now we checkout the development branch so that the user can move on to the next feature or hot fix
-//         function(cb){
-//             checkoutBranch('development', standardCallback(cb));
-//         }
-//     ]);
-// };
-
-// var generator = function generator(glp, tasks){
-//     // assign gulp to our global variable
-//     gulp = glp;
-    
-//     // make gitInfo a public task
-//     tasks.gitInfo = gitInfo;
-    
-//     // make startFeature a public task
-//     tasks.startFeature = startFeature;
-    
-//     // make update a public task
-//     tasks.update = update;
-    
-//     // make commit a public task
-//     tasks.commit = commit;
-    
-//     // make finish feature a public task
-//     tasks.finishFeature = finishFeature;
-    
-//     // make startHotFix a public task
-//     tasks.startHotFix = startHotFix;
-    
-//     // make finishHotfix a public task
-//     tasks.finishHotFix = finishHotFix;
-    
-//     // make startRelease a public task
-//     tasks.startRelease = startRelease;
-    
-//     return tasks;
-// };
-
-// module.exports = generator;
+module.exports = git;

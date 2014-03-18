@@ -84,7 +84,7 @@ builder.includeTasks = function includeTasks(){
     require('./git').init(gulp, tasks);
     
     // include our version bumping tasks
-    //require('./bump').init(gulp, tasks);
+    require('./bump').init(gulp, tasks);
 };
 
 // this is the development method that defines our default development workflow
