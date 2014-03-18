@@ -1,6 +1,6 @@
 {
   "name": "Blurr",
-  "version": "0.0.7",
+  "version": "0.2.0",
   "description": "Build applications so fast everybody else will see a blurr",
   "main": "app/index.js",
   "scripts": {
@@ -28,7 +28,9 @@
     "growler": "0.0.1",
     "gulp-util": "^2.2.14",
     "gulp-bump": "^0.1.6",
-    "stream-combiner": "0.0.4"
+    "stream-combiner": "0.0.4",
+    "jshint-stylish": "^0.1.5",
+    "gulp-jshint": "^1.5.0"
   },
   "dependencies": {
     "lodash": "^2.4.1",
