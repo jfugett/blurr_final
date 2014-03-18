@@ -10,13 +10,13 @@ var help = {};
 help.init = function init(gulp, tasks){
     // keep a reference to gulp
     help.gulp = gulp;
-    
+
     // keep a reference to the tasks object
     help.tasks = tasks;
-    
+
     // setup the base tasks
     help.setupTasks();
-    
+
     // return the tasks incase they need to be used again
     return help.tasks;
 };

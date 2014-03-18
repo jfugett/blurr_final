@@ -2,7 +2,7 @@
 
 // this is just a generator to allow injection of the needed dependencies
 var generator = function generator(growlerApp){
-    
+
     // this is our register function that will setup an individual notification
     var reporterFunction = function reporterFunction(notificationOptions, callback){
         // register the notification with our growler application
@@ -11,7 +11,7 @@ var generator = function generator(growlerApp){
             if(!success || err){
                 return callback(null, success);
             }
-            
+
             // Rename 'message' property to 'text' just so it's a little easier to use
             notificationOptions.text = notificationOptions.message;
             delete notificationOptions.message;
@@ -23,7 +23,7 @@ var generator = function generator(growlerApp){
                 });
         });
     };
-    
+
     // return the function so that it can be used by individual notification types
     return reporterFunction;
 };

@@ -3,6 +3,9 @@
 // include the gulp jshint task
 var jshint = require('gulp-jshint');
 
+// include the jscs task
+var jscs = require('gulp-jscs');
+
 // include the styling for jshint
 var stylish = require('jshint-stylish');
 
@@ -22,7 +25,7 @@ linter.init = function init(gulp, tasks){
     // assign references so we have access to them
     linter.gulp = gulp;
     linter.tasks = tasks;
-    
+
     // setup the tasks for this object
     linter.setupTasks();
 };
@@ -30,7 +33,7 @@ linter.init = function init(gulp, tasks){
 linter.setupTasks = function setupTasks(){
     // just a shortcut reference
     var tasks = linter.tasks;
-    
+
     // setup our publicly accessible tasks
     tasks.jsHint = linter.all;
 };
@@ -42,9 +45,10 @@ linter.run = function run(src){
         jshint(),
         jshint.reporter(stylish),
         jshint.reporter(reporter),
-        jshint.reporter('fail')
+        jshint.reporter('fail'),
+        jscs()
     );
-        
+
     // attaches the errorHandler to the streams
     combined.on('error', linter.gulp.errorHandler);
 };
