@@ -2,14 +2,26 @@
 
 var paths = {};
 
-paths.jsHintServer = './server/**/*.js';
-paths.jsHintBuild = ['gulpfile.js', './build/**/**.js'];
-paths.jsHintCLI = './cli/**/*.js';
-paths.jsHintClient = './client/**/*.js';
-paths.jsHintDeploy = './deploy/**/*.js';
-paths.jsHintMonitor = './monitor/**/*.js';
-paths.jsHintScaffold = './scaffold/**/*.js';
-paths.jsHintTests = './tests/**/*.js';
-paths.jsHintWorkers = './workers/**/*.js';
+// base paths usually used to write files back out
+paths.server = './server/';
+paths.build = './build/';
+paths.cli = './cli/';
+paths.client = './client/';
+paths.deploy = './deploy/';
+paths.monitor = './monitor/';
+paths.scaffold = './scaffold/';
+paths.tests = './tests/';
+paths.workers = './workers/';
+
+// primary paths to our javascript files
+paths.jsServer = './server/**/*.js';
+paths.jsBuild = './build/**/**.js';
+paths.jsCLI = './cli/**/*.js';
+paths.jsClient = './client/**/*.js';
+paths.jsDeploy = './deploy/**/*.js';
+paths.jsMonitor = './monitor/**/*.js';
+paths.jsScaffold = './scaffold/**/*.js';
+paths.jsTests = './tests/**/*.js';
+paths.jsWorkers = './workers/**/*.js';
 
 module.exports = paths;

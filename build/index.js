@@ -88,6 +88,9 @@ builder.includeTasks = function includeTasks(){
     
     // include our jshint tasks
     require('./jsHint').init(gulp, tasks);
+    
+    // include our jsBeautify tasks
+    require('./jsBeautify').init(gulp, tasks);
 };
 
 // this is the development method that defines our default development workflow
@@ -98,7 +101,7 @@ builder.dev = function dev(){
     // let the user know that we're starting up the environment
     gulp.notifyHandler('Firing Development Environment Up', 'Please be patient we\'ll have you up and running in no time');
 
-    console.log('Development Tasks Will Be Called Here');
+    //gulp.start('jsHintWatch');
 
     // let the user know that we're now running
     gulp.notifyHandler('Development Environment Running', 'We\'ll keep an eye on things so sit back, relax, and do what you do');
@@ -126,6 +129,7 @@ builder.build = function build(){
     // let the user know that the build process has started
     gulp.notifyHandler('Building Application Files', 'We\'re building the application files please bear with us');
     
+    gulp.start('jsBeautify');
     gulp.start('test');
 
     // let the user know that the build is finished

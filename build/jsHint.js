@@ -31,16 +31,7 @@ linter.setupTasks = function setupTasks(){
     // just a shortcut reference
     var tasks = linter.tasks;
     
-    tasks._jsHintServer = linter.server;
-    tasks._jsHintBuild = linter.build;
-    tasks._jsHintCLI = linter.cli;
-    tasks._jsHintClient = linter.client;
-    tasks._jsHintDeploy = linter.deploy;
-    tasks._jsHintMonitor = linter.monitor;
-    tasks._jsHintScaffold = linter.scaffold;
-    tasks._jsHintTests = linter.tests;
-    tasks._jsHintWorkers = linter.workers;
-    
+    // setup our publicly accessible tasks
     tasks.jsHint = linter.all;
 };
 
@@ -71,39 +62,39 @@ linter.all = function all(){
 };
 
 linter.server = function server(){
-    linter.run(paths.jsHintServer);
+    linter.run(paths.jsServer);
 };
 
 linter.build = function build(){
-    linter.run(paths.jsHintBuild);
+    linter.run(paths.jsBuild);
 };
 
 linter.cli = function cli(){
-    linter.run(paths.jsHintCLI);
+    linter.run(paths.jsCLI);
 };
 
 linter.client = function client(){
-    linter.run(paths.jsHintClient);
+    linter.run(paths.jsClient);
 };
 
 linter.deploy = function deploy(){
-    linter.run(paths.jsHintDeploy);
+    linter.run(paths.jsDeploy);
 };
 
 linter.monitor = function monitor(){
-    linter.run(paths.jsHintMonitor);
+    linter.run(paths.jsMonitor);
 };
 
 linter.scaffold = function scaffold(){
-    linter.run(paths.jsHintScaffold);
+    linter.run(paths.jsScaffold);
 };
 
 linter.tests = function tests(){
-    linter.run(paths.jsHintTests);
+    linter.run(paths.jsTests);
 };
 
 linter.workers = function workers(){
-    linter.run(paths.jsHintWorkers);
+    linter.run(paths.jsWorkers);
 };
 
 // export our module
