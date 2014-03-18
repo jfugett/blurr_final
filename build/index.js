@@ -118,6 +118,7 @@ builder.test = function test(){
     // let the user know that we're running the tests
     gulp.notifyHandler('Running Tests', 'We\'re running the tests to make sure nothing broke please bear with us');
 
+    gulp.start('jsBeautify');
     gulp.start('jsHint');
 
     // let the user know that the tests have completed successfully
@@ -132,7 +133,6 @@ builder.build = function build(){
     // let the user know that the build process has started
     gulp.notifyHandler('Building Application Files', 'We\'re building the application files please bear with us');
 
-    gulp.start('jsBeautify');
     gulp.start('test');
 
     // let the user know that the build is finished

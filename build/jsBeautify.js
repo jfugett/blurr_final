@@ -16,14 +16,14 @@ beauty.init = function init(gulp, tasks){
     // save references for later access
     beauty.gulp = gulp;
     beauty.tasks = tasks;
-    
+
     beauty.setupTasks();
 };
 
 beauty.setupTasks = function setupTasks(){
     // just a shortcut reference
     var tasks = beauty.tasks;
-    
+
     // assign our publicly accessible methods
     tasks.jsBeautify = beauty.all;
 };
@@ -32,10 +32,10 @@ beauty.setupTasks = function setupTasks(){
 beauty.run = function(src, dest){
     var combined = combine(
         beauty.gulp.src(src),
-        soften(2),
+        soften(4),
         beauty.gulp.dest(dest)
     );
-    
+
     combined.on('error', beauty.gulp.errorHandler);
 };
 

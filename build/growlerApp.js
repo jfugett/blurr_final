@@ -9,12 +9,12 @@ var fs = require('fs');
 // we create a new growl application here
 var growlerApp = new growler.GrowlApplication('blurr', {
     // sets the icon to the gulp icon we can change this later
-  icon: fs.readFileSync('gulp.png')
+    icon: fs.readFileSync('gulp.png')
 });
 
 // this registers the app to send out notifications
 growlerApp.setNotifications({
-  Blurr: {}
+    Blurr: {}
 });
 
 // export our growler application here so it can be used in the build system

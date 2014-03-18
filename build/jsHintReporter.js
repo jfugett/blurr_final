@@ -29,7 +29,7 @@ var jsHintReporter = {
         }
     },
 
-    
+
     // this function takes the results and builds up the html body
     reporter: function (results) {
         // see if we need to remove the existing report
@@ -47,7 +47,7 @@ var jsHintReporter = {
         // compile the main template using the results
         var compiled = _.template(template, null, {'variable': 'results'});
         var body = compiled(results);
-        
+
         // wrap the output inside the outer template
         compiled = _.template(outerTemplate, null, {'variable': 'body'});
         var output = compiled(body);

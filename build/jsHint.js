@@ -3,6 +3,9 @@
 // include the gulp jshint task
 var jshint = require('gulp-jshint');
 
+// include the jscs task
+var jscs = require('gulp-jscs');
+
 // include the styling for jshint
 var stylish = require('jshint-stylish');
 
@@ -45,7 +48,8 @@ linter.run = function run(src){
         jshint(),
         jshint.reporter(stylish),
         jshint.reporter(reporter),
-        jshint.reporter('fail')
+        jshint.reporter('fail'),
+        jscs()
     );
 
     // attaches the errorHandler to the streams

@@ -19,13 +19,13 @@ var git = {};
 git.init = function init(gulp, tasks){
     // keep a reference to gulp
     git.gulp = gulp;
-    
+
     // keep a reference to the tasks object
     git.tasks = tasks;
-    
+
     // setup the git tasks
     git.setupTasks();
-    
+
     // return the tasks object in case it needs to be reused
     return git.tasks;
 };
@@ -34,15 +34,15 @@ git.init = function init(gulp, tasks){
 git.setupTasks = function setupTasks(){
     // just a shortcut reference
     var tasks = git.tasks;
-    
+
     tasks.gitInfo = git.gitInfo;
-    
+
     tasks.update = git.update;
-    
+
     tasks.commit = git.commit;
-    
+
     tasks.startFeature = git.startFeature;
-    
+
     tasks.finishFeature = git.finishFeature;
 };
 
@@ -98,27 +98,27 @@ git.pushFiles = function pushFiles(cb){
 git.pullRequest = function pullRequest(options, cb){
     // title of the pull request
     var title = 'Requesting Merge of ' + options.src + ' to ' + options.dest;
-    
+
     // the repository that the pull request is coming from
     var from = {
         user: 'jfugett',
         repo: 'blurr',
         branch: options.src
     };
-    
+
     // the repository that the pull request is going to
     var to = {
         user: 'jfugett',
         repo: 'blurr',
         branch: options.dest
     };
-    
+
     // the message to be added to the pull request
     var message = {
         title: title,
         body: options.message
     };
-    
+
     // authorization token since it's a private repository
     var auth = {
         auth: {
@@ -126,7 +126,7 @@ git.pullRequest = function pullRequest(options, cb){
             token: '77f251f1c924a5a1dc3cf6f2ce9a0761f3a42618'
         }
     };
-    
+
     // run the actual command
     pr.pull(from, to, message, auth, cb);
 };
@@ -154,7 +154,7 @@ git.gitInfo = function gitInfo(){
 // this method handles starting a new feature branch
 git.startFeature = function startFeature(){
     var featureName = '';
-    
+
     // questions to use for prompting the user
     var questions = [
         {
@@ -163,20 +163,20 @@ git.startFeature = function startFeature(){
             message: 'What is the name of this feature?'
         }
     ];
-    
+
     // this is the logic for creating a new feature branch
     async.series([
         // make sure the current branch is development
         function checkCurrentBranch(cb){
             git.getCurrentBranch(function callback(err, result){
                 result = result.trim();
-                
+
                 if(result !== 'development'){
                     git.gulp.errorHandler(new Error('You must be on the development branch to start a new feature'));
                     cb('Not on development branch', null);
                     return;
                 }
-                
+
                 cb(err, result);
             });
         },
@@ -184,13 +184,13 @@ git.startFeature = function startFeature(){
         function checkStatus(cb){
             git.getBranchStatus(function callback(err, result){
                 result = result.trim();
-                
+
                 if(result !== ''){
                     git.gulp.errorHandler(new Error('You have modified files, please commit or stash them first'));
                     cb('Modified Files', null);
                     return;
                 }
-                
+
                 cb(err, result);
             });
         },
@@ -206,7 +206,7 @@ git.startFeature = function startFeature(){
                 featureName = featureName.replace(/[^a-z0-9\-]/g, '-');
                 // add the feature prefix to the feature name
                 featureName = 'feature-' + featureName;
-                
+
                 cb(null, true);
             });
         },
@@ -228,7 +228,7 @@ git.update = function update(){
 git.commit = function commit(callback){
     // this will hold our commit message
     var message = '';
-    
+
     // questions we'll prompt the user with
     var questions = [
         {
@@ -272,7 +272,7 @@ git.commit = function commit(callback){
             message: 'What issues does this change close? (Seperate values with commas)\r\nExample: [Closes: #67719970], [Finishes: #67719983]'
         }
     ];
-    
+
     // we use async here to ensure everything runs in the right order
     async.series([
         // pull the current branch so that it's up to date
@@ -283,18 +283,18 @@ git.commit = function commit(callback){
         function checkBranch(cb){
             git.getCurrentBranch(function(err, result){
                 result = result.trim();
-                
+
                 if(result === 'development' || result === 'master'){
                     git.gulp.errorHandler(new Error('You can\'t commit directly to development or master'));
                 }
-                
+
                 cb(err, result);
             });
         },
         // run the tests and make the build to ensure the commit has the appropriate files and doesn't break the build
         function performBuild(cb){
             git.gulp.start('build');
-            
+
             cb(null, true);
         },
         // add any modified, new, or deleted files to the git staging area
@@ -311,17 +311,17 @@ git.commit = function commit(callback){
                 message += '(' + answers.scope + '): ';
                 message += answers.subject;
                 message += '\r\n\r\n';
-                
+
                 var body = answers.body.replace(/\\n /g, '\r\n');
                 body = body.replace(/\\n/g, '\r\n');
-                
+
                 message += body;
                 message += '\r\n\r\n';
-                
+
                 var breaks = answers.breaks.replace(/, /g, ',');
                 breaks = breaks.replace(/,/g, '\r\n');
                 breaks = breaks.trim();
-                
+
                 var closes = answers.closes.replace(/, /g, ',');
                 closes = closes.replace(/,/g, '\r\n');
                 closes = closes.trim();
@@ -333,9 +333,9 @@ git.commit = function commit(callback){
                 if(closes !== ''){
                     message += closes;
                 }
-                
+
                 message = message.replace('"', '\\"');
-                
+
                 cb(null, true);
             });
         },
@@ -351,7 +351,7 @@ git.commit = function commit(callback){
         if(err){
             git.gulp.errorHandler(new Error(err));
         }
-        
+
         callback(err, result);
     });
 };
@@ -371,11 +371,11 @@ git.finishFeature = function finishFeature(){
             ]
         }
     ];
-    
+
     // we'll need access to buildType and the current branch between subtasks
     var buildType = '';
     var currentBranch = '';
-    
+
     async.series([
         //make sure the current branch is a feature branch
         function isFeatureBranch(cb){
@@ -387,9 +387,9 @@ git.finishFeature = function finishFeature(){
                     cb('You\'re not currently working on a feature!');
                     return;
                 }
-                
+
                 currentBranch = result;
-                
+
                 cb(err, result);
             });
         },
@@ -397,14 +397,14 @@ git.finishFeature = function finishFeature(){
         function promptUser(cb){
             inquirer.prompt(questions, function(answers){
                 buildType = answers.type;
-                
+
                 cb(null, true);
             });
         },
         // here we bump the version based on the previous answer
         function bumpVersion(cb){
             git.tasks._bump(buildType);
-            
+
             cb(null, true);
         },
         // here we push the build to the server
@@ -415,14 +415,14 @@ git.finishFeature = function finishFeature(){
         function sendPullRequest(cb){
             // set the source branch to the branch we're currently working on
             var src = currentBranch;
-            
+
             // set the destination branch to development
             var dest = 'development';
-            
+
             // normalize the feature name for humans
             var featureName = src.substr(8, src.length - 8);
             featureName = featureName.replace('-', ' ');
-            
+
             var message = 'Finished Feature ' + featureName;
 
             var options = {
@@ -437,7 +437,7 @@ git.finishFeature = function finishFeature(){
                     err = err.res;
                     git.gulp.errorHandler(new Error(err));
                 }
-                
+
                 cb(err, results);
             });
         },
@@ -451,7 +451,7 @@ git.finishFeature = function finishFeature(){
 // this method handles starting a new hot fix branch
 git.startHotFix = function startHotFix(){
     var fixName = '';
-    
+
     // questions to use for prompting the user
     var questions = [
         {
@@ -460,20 +460,20 @@ git.startHotFix = function startHotFix(){
             message: 'What is the name of this hotfix?'
         }
     ];
-    
+
     // this is the logic for creating a new hotfix branch
     async.series([
         // make sure the current branch is master
         function checkCurrentBranch(cb){
             git.getCurrentBranch(function callback(err, result){
                 result = result.trim();
-                
+
                 if(result !== 'master'){
                     git.gulp.errorHandler(new Error('You must be on the master branch to start a new hot fix'));
                     cb('Not on master branch', null);
                     return;
                 }
-                
+
                 cb(err, result);
             });
         },
@@ -481,13 +481,13 @@ git.startHotFix = function startHotFix(){
         function checkStatus(cb){
             git.getBranchStatus(function callback(err, result){
                 result = result.trim();
-                
+
                 if(result !== ''){
                     git.gulp.errorHandler(new Error('You have modified files, please commit or stash them first'));
                     cb('Modified Files', null);
                     return;
                 }
-                
+
                 cb(err, result);
             });
         },
@@ -503,7 +503,7 @@ git.startHotFix = function startHotFix(){
                 fixName = fixName.replace(/[^a-z0-9\-]/g, '-');
                 // add the hotfix prefix to the name
                 fixName = 'hotfix-' + fixName;
-                
+
                 cb(null, true);
             });
         },
@@ -517,7 +517,7 @@ git.startHotFix = function startHotFix(){
 // this method handles starting a new relese branch
 git.startRelease = function startRelease(){
     var releaseName = '';
-    
+
     // questions to use for prompting the user
     var questions = [
         {
@@ -526,20 +526,20 @@ git.startRelease = function startRelease(){
             message: 'What is the name of this release?'
         }
     ];
-    
+
     // this is the logic for creating a new release branch
     async.series([
         // make sure the current branch is development
         function checkCurrentBranch(cb){
             git.getCurrentBranch(function callback(err, result){
                 result = result.trim();
-                
+
                 if(result !== 'development'){
                     git.gulp.errorHandler(new Error('You must be on the development branch to start a new release'));
                     cb('Not on development branch', null);
                     return;
                 }
-                
+
                 cb(err, result);
             });
         },
@@ -547,13 +547,13 @@ git.startRelease = function startRelease(){
         function checkStatus(cb){
             git.getBranchStatus(function callback(err, result){
                 result = result.trim();
-                
+
                 if(result !== ''){
                     git.gulp.errorHandler(new Error('You have modified files, please commit or stash them first'));
                     cb('Modified Files', null);
                     return;
                 }
-                
+
                 cb(err, result);
             });
         },
@@ -569,7 +569,7 @@ git.startRelease = function startRelease(){
                 releaseName = releaseName.replace(/[^a-z0-9\-]/g, '-');
                 // add the release prefix to the name
                 releaseName = 'release-' + releaseName;
-                
+
                 cb(null, true);
             });
         },
@@ -585,7 +585,7 @@ git.finishHotFix = function finishHotFix(){
     // we'll need access to buildType and the current branch between subtasks
     var buildType = 'patch';
     var currentBranch = '';
-    
+
     async.series([
         //make sure the current branch is a hotfix branch
         function isHotFixBranch(cb){
@@ -598,16 +598,16 @@ git.finishHotFix = function finishHotFix(){
                     cb('You\'re not currently working on a hotfix!');
                     return;
                 }
-                
+
                 currentBranch = result;
-                
+
                 cb(err, result);
             });
         },
         // here we bump the version based on the previous answer
         function bumpVersion(cb){
             git.tasks._bump(buildType);
-            
+
             cb(null, true);
         },
         // here we push the build to the server
@@ -618,14 +618,14 @@ git.finishHotFix = function finishHotFix(){
         function sendPullRequest(cb){
             // set the source branch to the branch we're currently working on
             var src = currentBranch;
-            
+
             // set the destination branch to master
             var dest = 'master';
-            
+
             // normalize the feature name for humans
             var fixName = src.substr(7, src.length - 7);
             fixName = fixName.replace('-', ' ');
-            
+
             var message = 'Finished Hot Fix ' + fixName;
 
             var options = {
@@ -640,7 +640,7 @@ git.finishHotFix = function finishHotFix(){
                     err = err.res;
                     git.gulp.errorHandler(new Error(err));
                 }
-                
+
                 cb(err, results);
             });
         },
@@ -665,11 +665,11 @@ git.finishRelease = function finishRelease(){
             ]
         }
     ];
-    
+
     // we'll need access to buildType and the current branch between subtasks
     var buildType = '';
     var currentBranch = '';
-    
+
     async.series([
         //make sure the current branch is a release branch
         function isReleaseBranch(cb){
@@ -681,9 +681,9 @@ git.finishRelease = function finishRelease(){
                     cb('You\'re not currently working on a release!');
                     return;
                 }
-                
+
                 currentBranch = result;
-                
+
                 cb(err, result);
             });
         },
@@ -691,14 +691,14 @@ git.finishRelease = function finishRelease(){
         function promptUser(cb){
             inquirer.prompt(questions, function(answers){
                 buildType = answers.type;
-                
+
                 cb(null, true);
             });
         },
         // here we bump the version based on the previous answer
         function bumpVersion(cb){
             git.tasks._bump(buildType);
-            
+
             cb(null, true);
         },
         // here we push the build to the server
@@ -709,14 +709,14 @@ git.finishRelease = function finishRelease(){
         function sendPullRequest(cb){
             // set the source branch to the branch we're currently working on
             var src = currentBranch;
-            
+
             // set the destination branch to master
             var dest = 'master';
-            
+
             // normalize the release name for humans
             var releaseName = src.substr(8, src.length - 8);
             releaseName = releaseName.replace('-', ' ');
-            
+
             var message = 'Finished Release ' + releaseName;
 
             var options = {
@@ -731,7 +731,7 @@ git.finishRelease = function finishRelease(){
                     err = err.res;
                     git.gulp.errorHandler(new Error(err));
                 }
-                
+
                 cb(err, results);
             });
         },
