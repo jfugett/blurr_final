@@ -1,8 +1,5 @@
 'use strict';
 
-// include the gutil module
-var gutil = require('gulp-util');
-
 // include the exec module so that we can call shell commands
 var exec = require('child_process').exec;
 
@@ -140,14 +137,14 @@ git.gitInfo = function gitInfo(){
         // show the current branch
         function showCurrentBranch(cb){
             git.getCurrentBranch(function callback(err, result){
-                gutil.log(gutil.colors.green('Current Branch: ') + result);
+                console.log('Current Branch: ' + result);
                 cb(err, result);
             });
         },
         // show the current status in short form
         function showStatus(cb){
             git.getBranchStatus(function callback(err, result){
-                gutil.log(gutil.colors.green('Status: ') + result);
+                console.log('Status: ' + result);
                 cb(err, result);
             });
         }
@@ -337,7 +334,7 @@ git.commit = function commit(callback){
                     message += closes;
                 }
                 
-                console.log(message);
+                message = message.replace('"', '\\"');
                 
                 cb(null, true);
             });
@@ -431,11 +428,12 @@ git.finishFeature = function finishFeature(){
 
             git.pullRequest(options, function(err, results){
                 if(err){
-                    err = err.res.body;
+                    console.log(err.res);
+                    err = err.res;
                     git.gulp.errorHandler(err);
                 }
                 
-                gutil.log(results);    
+                console.log(results);    
                 cb(err, results);
             });
         },
