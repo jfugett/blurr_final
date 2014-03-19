@@ -66,6 +66,7 @@ linter.all = function all(){
     linter.scaffold();
     linter.tests();
     linter.workers();
+    linter.open();
 };
 
 linter.server = function server(){
