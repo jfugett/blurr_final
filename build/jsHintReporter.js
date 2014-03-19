@@ -6,9 +6,6 @@ var fs = require('fs');
 // include lodash for templating
 var _ = require('lodash');
 
-// this will be used to know when to delete the jshint.html file
-var cleaned = false;
-
 // here we get the main template
 var template = fs.readFileSync('./build/reporterTemplate.html');
 
@@ -32,18 +29,6 @@ var jsHintReporter = {
 
     // this function takes the results and builds up the html body
     reporter: function (results) {
-        // see if we need to remove the existing report
-        if(!cleaned){
-            try{
-                fs.unlinkSync(jsHintReporter.outputFile);
-            } catch(error){
-                // we're ignoring the error because the file likely didn't exist
-            }
-
-            // set cleaned to true so we don't remove our own writes
-            cleaned = true;
-        }
-
         // compile the main template using the results
         var compiled = _.template(template, null, {'variable': 'results'});
         var body = compiled(results);

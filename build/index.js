@@ -83,6 +83,9 @@ builder.includeTasks = function includeTasks(){
     // include our help tasks
     require('./help').init(gulp, tasks);
 
+    // include our file cleaning tasks
+    require('./cleanFiles').init(gulp, tasks);
+
     // start up our server here
     //require('./server').init(gulp, tasks);
 
@@ -121,6 +124,7 @@ builder.test = function test(){
     // let the user know that we're running the tests
     gulp.notifyHandler('Running Tests', 'We\'re running the tests to make sure nothing broke please bear with us');
 
+    gulp.start('_cleanTests');
     gulp.start('jsBeautify');
     gulp.start('jsHint');
 
