@@ -32,17 +32,11 @@
     "jshint-stylish": "^0.1.5",
     "gulp-jshint": "^1.5.0",
     "yargs": "^1.2.1",
-<<<<<<< HEAD
     "gulp-soften": "0.0.1",
     "gulp-watch": "^0.5.2",
     "gulp-jscs": "^0.3.2",
     "gulp-connect-multi": "^1.0.7",
     "gulp-open": "^0.2.8"
-=======
-    "gulp-esformatter": "^0.1.2",
-    "gulp-soften": "0.0.1",
-    "gulp-jscs": "^0.3.2"
->>>>>>> d24ccbf391f5a88ed4ac76ce7503d997a4c70875
   },
   "dependencies": {
     "lodash": "^2.4.1",
