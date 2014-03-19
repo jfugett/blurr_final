@@ -1,3 +1,5 @@
+'use strict';
+
 // include the files system utility so we can read our build configuration file
 var fs = require('fs');
 

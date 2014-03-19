@@ -106,7 +106,7 @@ linter.workers = function workers(){
 };
 
 linter.open = function open(){
-    if(linter.config.showJsHintResultsInBrowser){
+    if(linter.gulp.config.showJsHintResultsInBrowser){
         var combined = combine(
             linter.gulp.src('./test_results/jsHint.html'),
             browser('<%file.path%>')
