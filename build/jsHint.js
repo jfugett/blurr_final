@@ -106,12 +106,14 @@ linter.workers = function workers(){
 };
 
 linter.open = function open(){
-    var combined = combine(
-        linter.gulp.src('./test_results/jsHint.html'),
-        browser('<%file.path%>')
-    );
+    if(linter.config.showJsHintResultsInBrowser){
+        var combined = combine(
+            linter.gulp.src('./test_results/jsHint.html'),
+            browser('<%file.path%>')
+        );
 
-    combined.on('error', linter.gulp.errorHandler);
+        combined.on('error', linter.gulp.errorHandler);
+    }
 };
 
 // export our module

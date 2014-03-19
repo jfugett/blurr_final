@@ -1,7 +1,7 @@
 'use strict';
 
 // this is just a generator to allow injection of the needed dependencies
-var generator = function generator(growlerApp){
+var generator = function generator(gulp, growlerApp){
 
     // this is our register function that will setup an individual notification
     var reporterFunction = function reporterFunction(notificationOptions, callback){
@@ -16,11 +16,16 @@ var generator = function generator(growlerApp){
             notificationOptions.text = notificationOptions.message;
             delete notificationOptions.message;
 
-            // here we send the actual notification
-            growlerApp.sendNotification('Blurr', notificationOptions,
-                function sendNotificationCallback(success, err) {
-                    return callback(err, success);
-                });
+            if(gulp.config.showNotifications){
+                // here we send the actual notification
+                growlerApp.sendNotification('Blurr', notificationOptions,
+                    function sendNotificationCallback(success, err) {
+                        return callback(err, success);
+                    });
+            } else {
+                callback(null, true);
+            }
+
         });
     };
 

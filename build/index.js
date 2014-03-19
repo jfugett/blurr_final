@@ -7,11 +7,14 @@ builder.extendGulp = function extendGulp(){
     // just a shortcut reference
     var gulp = builder.gulp;
 
+    // get our config options and assign them to gulp
+    gulp.config = require('./configReader')();
+
     // include the needed libraries for growl notifications
     var growlerApp = require('./growlerApp');
 
     // include a shorthand reporter function to make things easy on us
-    var reporterFunction = require('./reporterFunction')(growlerApp);
+    var reporterFunction = require('./reporterFunction')(gulp, growlerApp);
 
     // include our master key checker onto the primary gulp object so we can access it anywhere we need it
     gulp.isMaster = require('./master');

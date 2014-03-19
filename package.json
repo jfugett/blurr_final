@@ -36,7 +36,8 @@
     "gulp-watch": "^0.5.2",
     "gulp-jscs": "^0.3.2",
     "gulp-connect-multi": "^1.0.7",
-    "gulp-open": "^0.2.8"
+    "gulp-open": "^0.2.8",
+    "gulp-clean": "^0.2.4"
   },
   "dependencies": {
     "lodash": "^2.4.1",
